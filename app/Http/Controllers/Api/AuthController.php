@@ -144,6 +144,13 @@ class AuthController extends Controller
             }
 
             $user = User::find($request->user_id);
+            if(!$user){
+                return response()->json([
+                    'status' => false,
+                    'message' => 'user tidak ditemukan',
+                    'errors' => $validateUser->errors()
+                ], 200);
+            }
 
             $user->fullname = $request->fullname;
             $user->email = $request->email ?? "user@mail.com";
@@ -152,6 +159,92 @@ class AuthController extends Controller
             $user->phone_number = $request->phone_number;
             $user->company_id = $request->company_id ?? "";
             $user->address = $request->address ?? "";
+            $user->update();
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Update Successfully',
+            ], 200);
+
+        } catch (\Throwable $th) {
+            return response()->json([
+                'status' => false,
+                'message' => $th->getMessage()
+            ], 200);
+        }
+    }
+
+     public function updateProfile(Request $request, $application)
+    {
+        try {
+            //Validated
+            $validateUser = Validator::make($request->all(), 
+            [
+                'user_id' => 'required',
+                'status' => 'required'
+            ]);
+
+            if($validateUser->fails()){
+                return response()->json([
+                    'status' => false,
+                    'message' => 'validation error',
+                    'errors' => $validateUser->errors()
+                ], 200);
+            }
+
+            $user = User::find($request->user_id);
+
+            if(!$user){
+                return response()->json([
+                    'status' => false,
+                    'message' => 'user tidak ditemukan',
+                    'errors' => $validateUser->errors()
+                ], 200);
+            }
+            $user->status = $request->status ?? "Pending";
+            $user->update();
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Update Successfully',
+            ], 200);
+
+        } catch (\Throwable $th) {
+            return response()->json([
+                'status' => false,
+                'message' => $th->getMessage()
+            ], 200);
+        }
+    }
+
+    public function updatePassword(Request $request, $application)
+    {
+        try {
+            //Validated
+            $validateUser = Validator::make($request->all(), 
+            [
+                'user_id' => 'required',
+                'password' => ['required', 'numeric', 'min:6', 'confirmed'],
+            ]);
+
+            if($validateUser->fails()){
+                return response()->json([
+                    'status' => false,
+                    'message' => 'validation error',
+                    'errors' => $validateUser->errors()
+                ], 200);
+            }
+
+            $user = User::find($request->user_id);
+
+            if(!$user){
+                return response()->json([
+                    'status' => false,
+                    'message' => 'user tidak ditemukan',
+                    'errors' => $validateUser->errors()
+                ], 200);
+            }
+            $user->password = Hash::make($request->password);
             $user->update();
 
             return response()->json([
