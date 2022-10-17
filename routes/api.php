@@ -16,16 +16,23 @@ use App\Http\Controllers\Api\KasbonController;
 |
 */
 
-Route::post('/register', [AuthController::class, 'createUser']);
-Route::post('/login', [AuthController::class, 'loginUser']);
+Route::post('/register/{application}', [AuthController::class, 'createUser']);
+Route::post('/login/{application}', [AuthController::class, 'loginUser']);
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
+Route::middleware('auth:sanctum')->get('/user{application}', function (Request $request) {
     return $request->user();
 });
 
-Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
+Route::post('/logout/{application}', [AuthController::class, 'logout'])->middleware('auth:sanctum');
+Route::post('/refresh', [AuthController::class, 'refresh']);
 
 Route::group(['middleware' => ['auth:sanctum']], function () {
-    Route::post('/kasbon/list', [KasbonController::class, 'list']);
-    Route::post('/kasbon/store', [KasbonController::class, 'store']);
+    Route::post('/kasbon/list/{application}', [KasbonController::class, 'list']);
+    Route::post('/kasbon/view/{application}', [KasbonController::class, 'view']);
+    Route::post('/kasbon/store/{application}', [KasbonController::class, 'store']);
+
+    // Profile
+    Route::post('/profile/update/{application}', [AuthController::class, 'updateUser']);
+    Route::post('/profile/delete/{application}', [AuthController::class, 'deleteUser']);
+    Route::post('/profile/update-password/{application}', [AuthController::class, 'updatePassword']);
 });
