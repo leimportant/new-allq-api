@@ -19,4 +19,9 @@ class Kasbon extends Model
     {
         return $this->belongsTo(User::class, 'created_by');
     }
+
+    public function activities()
+    {
+        return $this->hasMany(Activities::class, 'transaction_id', 'id');
+    }
 }
