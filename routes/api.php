@@ -33,6 +33,10 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::post('/kasbon/list/{application}', [KasbonController::class, 'list']);
     Route::post('/kasbon/view/{application}', [KasbonController::class, 'view']);
     Route::post('/kasbon/store/{application}', [KasbonController::class, 'store']);
+    # Pembayaran Kasbon
+    Route::post('/payment-kasbon/view/{application}', [KasbonController::class, 'view']);
+    Route::post('/payment-kasbon/store/{application}', [KasbonController::class, 'store']);
+
 
     // Profile
     Route::post('/profile/update/{application}', [AuthController::class, 'updateUser']);

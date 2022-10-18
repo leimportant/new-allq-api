@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Api;
 
 use App\Models\User;
+use App\Models\AccessMenu;
+use App\Models\AccessRoles;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
@@ -39,12 +41,19 @@ class AuthController extends Controller
                 'password' => Hash::make($request->password)
             ]);
 
+            $access_menu = AccessMenu::where('application', $application)
+                                       ->where('default', 'Y')
+                                       ->whereNull('deleted_at')
+                                       ->get();
+            $user_activity = "Silahkan lengkapi data profile anda, supaya dapat di verifikasi oleh admin";
             return response()->json([
                 'status' => true,
                 'message' => 'User Created Successfully',
-                'token_type'   => 'bearer',
+                'token_type'  => 'bearer',
                 'token' => $user->createToken("API TOKEN")->plainTextToken,
-                'access_menu' => [],
+                'user' => $user,
+                'user_activity' => $user_activity,
+                'access_menu' => $access_menu,
             ], 200);
 
         } catch (\Throwable $th) {
@@ -89,13 +98,15 @@ class AuthController extends Controller
                           ->where('application', $application)
                           ->first();
 
+            $access_menu = $this->access_menu($application);
+
             return response()->json([
                 'status' => true,
                 'message' => 'User Logged In Successfully',
                 'token_type'   => 'bearer',
                 'token' => $user->createToken("API TOKEN")->plainTextToken,
                 'user' => $user,
-                'access_menu' => [],
+                'access_menu' => $access_menu,
             ], 200);
 
         } catch (\Throwable $th) {
@@ -104,6 +115,23 @@ class AuthController extends Controller
                 'message' => $th->getMessage()
             ], 200);
         }
+    }
+
+    private function access_menu($application) {
+        $user_id = Auth::id();
+        $user = User::find($user_id);
+        $position_id = $user->status == "Active" ? $user->position_id : "";
+        $role = AccessRoles::selectRaw('menu_id')
+                            ->where('position_id', $position_id)
+                            ->get()
+                            ->toArray();
+
+        $data = AccessMenu::where('application', $application)
+                                ->whereIn('id', $role)
+                                ->whereNull('deleted_at')
+                                ->get();
+
+        return $data;
     }
 
      // method for user logout and delete token

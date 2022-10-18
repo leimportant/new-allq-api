@@ -15,32 +15,8 @@ use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use Log;
 
-class KasbonController extends Controller
+class PaymentkasbonController extends Controller
 {
-
-    public function list(Request $request, $application)
-    {
-        $user_id = Auth::id();
-        $filter = $request->id;
-        $sql =  Kasbon::leftJoin('statuses', 'statuses.id', '=', 'kasbon.status')
-                        ->whereNull('deleted_at')
-                        ->where('application', $application)
-                        ->where('created_by', $user_id);
-
-        if ($filter) {
-            $sql->where('remark', $filter)
-                    ->orwhere('fullname', $filter)
-                    ->orwhere('amount', $filter);
-        }
-
-
-        $data = $sql->paginate();
-
-        return response()->json([
-            'status' => true,
-            'data' => $data
-        ], 200);
-    }
 
     public function view(Request $request, $application)
     {
@@ -48,6 +24,7 @@ class KasbonController extends Controller
         $filter = $request->id;
         $sql =  Kasbon::with('activities')
                         ->where('application', $application)
+                        ->where('kasbon_type', 2)
                         ->where('id', $filter);
 
         $data = $sql->get();
@@ -69,7 +46,6 @@ class KasbonController extends Controller
             [
                 'user_id' => 'required',
                 'amount' => ['required', 'numeric'],
-                'remark' => 'required'
             ]);
 
             if($validateUser->fails()){
@@ -86,7 +62,7 @@ class KasbonController extends Controller
             if ($request->amount <= 0) {
                 return response()->json([
                     'status' => false,
-                    'message' => 'Kasbon tidak boleh 0 (nol) atau kosong',
+                    'message' => 'Pembayaran Kasbon tidak boleh 0 (nol) atau kosong',
                     'errors' => $validateUser->errors()
                 ], 200);
             }
@@ -122,7 +98,7 @@ class KasbonController extends Controller
                 $data->amount = $request->amount;
                 $data->remark = $request->remark;
                 $data->status = $request->status ?? 1;
-                $data->kasbon_type = 1;
+                $data->kasbon_type = 2;
                 $data->updated_by = $user_id;
                 $data->updated_at = $now;
                 $data->update();
@@ -130,7 +106,7 @@ class KasbonController extends Controller
                 $descriptions = $fullname . " edit pengajuan kasbon sebesar " . $request->amount;
 
             } else {
-                $transaction_id = $this->generateNumber(1, $application);
+                $transaction_id = $this->generateNumber(2, $application);
 
                 $data = new Kasbon;
                 $data->id = $transaction_id;
@@ -139,9 +115,9 @@ class KasbonController extends Controller
                 $data->company_id = $company_id;
                 $data->application = $application;
                 $data->amount = $request->amount;
-                $data->remark = $request->remark;
+                $data->remark = $request->remark ?? "Pembayaran";
                 $data->status = $request->status ?? 1;
-                $data->kasbon_type = 1;
+                $data->kasbon_type = 2;
                 $data->created_by = $user_id;
                 $data->updated_by = $user_id;
                 $data->created_at = $now;
