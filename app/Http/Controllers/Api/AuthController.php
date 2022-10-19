@@ -98,14 +98,15 @@ class AuthController extends Controller
                           ->where('application', $application)
                           ->first();
 
-            $access_menu = $this->access_menu($application);
-
+            $access_menu = $user == "Active" ? $this->access_menu($application) : [];
+            $user_activity = $user !== "Active" ? "Status Akun anda *" . $user->status . "*, Hubungi admin untuk verifikasi" : "";
             return response()->json([
                 'status' => true,
                 'message' => 'User Logged In Successfully',
                 'token_type'   => 'bearer',
                 'token' => $user->createToken("API TOKEN")->plainTextToken,
                 'user' => $user,
+                'user_activity' => $user_activity,
                 'access_menu' => $access_menu,
             ], 200);
 
@@ -160,7 +161,7 @@ class AuthController extends Controller
                 'address' => 'required',
                 'company_id' => 'required',
                 'position_id' => 'required',
-                'phone_number' => 'required|unique:users,phone_number',
+                'phone_number' => 'required',
             ]);
 
             if($validateUser->fails()){
@@ -176,6 +177,17 @@ class AuthController extends Controller
                 return response()->json([
                     'status' => false,
                     'message' => 'user tidak ditemukan',
+                    'errors' => $validateUser->errors()
+                ], 200);
+            }
+
+            $check_phone = User::where('phone_number', $request->phone_number)
+                                 ->whereNotIn('id', [$request->user_id])
+                                 ->first();
+            if($check_phone){
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Tidak dapat update data, Nomor Handphone sudah dipakai. silahkan cek kembali',
                     'errors' => $validateUser->errors()
                 ], 200);
             }

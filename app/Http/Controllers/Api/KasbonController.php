@@ -20,17 +20,29 @@ class KasbonController extends Controller
 
     public function list(Request $request, $application)
     {
-        $user_id = Auth::id();
+        $user_id = $request->user_id ?? Auth::id();
         $filter = $request->id;
-        $sql =  Kasbon::leftJoin('statuses', 'statuses.id', '=', 'kasbon.status')
+        $month = substr($request->period,5,4);
+        $year = substr($request->period,0,4);
+        
+        $sql =  Kasbon::select([
+                            DB::raw('kasbon.*'),
+                            DB::raw('statuses.name as status_name')
+                        ])
+                        ->leftJoin('statuses', 'statuses.id', '=', 'kasbon.status')
                         ->whereNull('deleted_at')
                         ->where('application', $application)
-                        ->where('created_by', $user_id);
+                        ->whereMonth('created_at', $month)
+                        ->whereYear('created_at', $year)
+                        ->where(function($query) use($user_id) {
+                            $query->where('created_by', $user_id)
+                                  ->where('user_id', $user_id); 
+                       });
 
         if ($filter) {
-            $sql->where('remark', $filter)
-                    ->orwhere('fullname', $filter)
-                    ->orwhere('amount', $filter);
+            $sql->where('remark', 'LIKE', '%' . $filter. '%')
+                    ->orwhere('fullname', 'LIKE', '%' . $filter. '%')
+                    ->orwhere('amount', 'LIKE', '%' . $filter. '%');
         }
 
 
