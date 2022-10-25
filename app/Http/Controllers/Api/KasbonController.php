@@ -7,6 +7,7 @@ use App\Models\Kasbon;
 use App\Models\Employee;
 use App\Models\Activities;
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Api\PaymentkasbonController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -35,8 +36,7 @@ class KasbonController extends Controller
                         ->whereMonth('created_at', $month)
                         ->whereYear('created_at', $year)
                         ->where(function($query) use($user_id) {
-                            $query->where('created_by', $user_id)
-                                  ->where('user_id', $user_id); 
+                            $query->where('user_id', $user_id); 
                        });
 
         if ($filter) {
@@ -48,12 +48,33 @@ class KasbonController extends Controller
 
         $data = $sql->paginate();
 
+        $kasbon  = $this->dashboard($request, $application, 1);
+        $bayar  = $this->dashboard($request, $application, 2);
+        $total_kasbon  = floatval($kasbon - $bayar);
         return response()->json([
             'status' => true,
-            'data' => $data
+            'kasbon' => $kasbon,
+            'bayar' => $bayar,
+            'total_kasbon' => $total_kasbon,
+            'data' => $data,
         ], 200);
     }
 
+    public function dashboard($request, $application, $kasbon_type)
+    {
+        $user_id = $request->user_id ?? Auth::id();
+
+        $data = Kasbon::select([
+                    DB::raw('SUM(amount) as amount')
+                ])
+                ->where('user_id', $user_id)
+                ->whereIn('status', [1,2,3])
+                ->where('kasbon_type', $kasbon_type)
+                ->groupBy('kasbon_type')
+                ->first();
+            
+        return floatval($data->amount) ?? 0;
+    }
     public function view(Request $request, $application)
     {
         $user_id = Auth::id();
@@ -63,10 +84,24 @@ class KasbonController extends Controller
                         ->where('id', $filter);
 
         $data = $sql->get();
+        $result= [];
+        foreach($data as $row) {
+            $activities = [];
+            foreach($row->activities as $act) {
+                $user_id = $act->user_id;
+                $usr = User::find($user_id);
+                $fullname = $usr->fullname ?? "";
+                $descriptions = $fullname . ' ' . $act->descriptions;
+                $act->descriptions = $descriptions;
+                $activities[] = $act;
+            } 
+
+            $result[] = $row;
+        }
 
         return response()->json([
             'status' => true,
-            'data' => $data
+            'data' => $result
         ], 200);
     }
 
@@ -139,7 +174,7 @@ class KasbonController extends Controller
                 $data->updated_at = $now;
                 $data->update();
 
-                $descriptions = $fullname . " edit pengajuan kasbon sebesar " . $request->amount;
+                $descriptions = " edit pengajuan kasbon sebesar " . $request->amount;
 
             } else {
                 $transaction_id = $this->generateNumber(1, $application);
@@ -161,7 +196,7 @@ class KasbonController extends Controller
                 $data->save();
 
 
-                $descriptions = $fullname . " melakukan pengajuan kasbon sebesar " . $request->amount;
+                $descriptions = " melakukan pengajuan kasbon sebesar " . $request->amount;
             }
 
             $act = Activities::create([
@@ -170,6 +205,8 @@ class KasbonController extends Controller
                 'user_id' => $request->user_id,
                 'descriptions' => $descriptions,
             ]);
+
+            $updateKasbon = (new PaymentkasbonController)->UpdateKasbon($transaction_id, $request->user_id);
 
             return response()->json([
                 'status' => true,

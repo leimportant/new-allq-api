@@ -27,7 +27,7 @@ class AuthController extends Controller
             if($validateUser->fails()){
                 return response()->json([
                     'status' => false,
-                    'message' => 'validation error',
+                    'message' => 'validasi error',
                     'errors' => $validateUser->errors()
                 ], 200);
             }
@@ -48,7 +48,7 @@ class AuthController extends Controller
             $user_activity = "Silahkan lengkapi data profile anda, supaya dapat di verifikasi oleh admin";
             return response()->json([
                 'status' => true,
-                'message' => 'User Created Successfully',
+                'message' => 'Buat akun berhasil',
                 'token_type'  => 'bearer',
                 'token' => $user->createToken("API TOKEN")->plainTextToken,
                 'user' => $user,
@@ -102,7 +102,7 @@ class AuthController extends Controller
             $user_activity = $user !== "Active" ? "Status Akun anda *" . $user->status . "*, Hubungi admin untuk verifikasi" : "";
             return response()->json([
                 'status' => true,
-                'message' => 'User Logged In Successfully',
+                'message' => 'Login Berhasil',
                 'token_type'   => 'bearer',
                 'token' => $user->createToken("API TOKEN")->plainTextToken,
                 'user' => $user,
@@ -140,7 +140,7 @@ class AuthController extends Controller
      {
          auth()->user()->tokens()->delete();
          return [
-             'message' => 'You have successfully logged out'
+             'message' => 'Berhasil logged out'
          ];
      }
 
@@ -198,6 +198,7 @@ class AuthController extends Controller
             $user->position_id = $request->position_id ?? "";
             $user->phone_number = $request->phone_number;
             $user->company_id = $request->company_id ?? "";
+            $user->ktp_number = $request->ktp_number ?? "";
             $user->address = $request->address ?? "";
             $user->update();
 
@@ -237,7 +238,7 @@ class AuthController extends Controller
             if(!$user){
                 return response()->json([
                     'status' => false,
-                    'message' => 'user tidak ditemukan',
+                    'message' => 'User tidak ditemukan',
                     'errors' => $validateUser->errors()
                 ], 200);
             }
@@ -246,7 +247,7 @@ class AuthController extends Controller
 
             return response()->json([
                 'status' => true,
-                'message' => 'Update Successfully',
+                'message' => 'Update Berhasil',
             ], 200);
 
         } catch (\Throwable $th) {
@@ -270,7 +271,7 @@ class AuthController extends Controller
             if($validateUser->fails()){
                 return response()->json([
                     'status' => false,
-                    'message' => 'validation error',
+                    'message' => 'validasi error',
                     'errors' => $validateUser->errors()
                 ], 200);
             }
@@ -280,7 +281,7 @@ class AuthController extends Controller
             if(!$user){
                 return response()->json([
                     'status' => false,
-                    'message' => 'user tidak ditemukan',
+                    'message' => 'User tidak ditemukan',
                     'errors' => $validateUser->errors()
                 ], 200);
             }
@@ -289,7 +290,7 @@ class AuthController extends Controller
 
             return response()->json([
                 'status' => true,
-                'message' => 'Update Successfully',
+                'message' => 'Update Berhasil',
             ], 200);
 
         } catch (\Throwable $th) {

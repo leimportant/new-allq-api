@@ -67,7 +67,6 @@ class PaymentkasbonController extends Controller
                 ], 200);
             }
 
-
             if (in_array($status, [2,3])) {
                 return response()->json([
                     'status' => false,
@@ -103,7 +102,7 @@ class PaymentkasbonController extends Controller
                 $data->updated_at = $now;
                 $data->update();
 
-                $descriptions = $fullname . " edit pengajuan kasbon sebesar " . $request->amount;
+                $descriptions = " edit pengajuan pembayaran kasbon sebesar " . $request->amount;
 
             } else {
                 $transaction_id = $this->generateNumber(2, $application);
@@ -125,7 +124,7 @@ class PaymentkasbonController extends Controller
                 $data->save();
 
 
-                $descriptions = $fullname . " melakukan pengajuan kasbon sebesar " . $request->amount;
+                $descriptions = " melakukan pengajuan pembayaran kasbon sebesar " . $request->amount;
             }
 
             $act = Activities::create([
@@ -135,6 +134,8 @@ class PaymentkasbonController extends Controller
                 'descriptions' => $descriptions,
             ]);
 
+            $this->UpdateKasbon($transaction_id, $request->user_id);
+           
             return response()->json([
                 'status' => true,
                 'message' => 'Data Berhasil di simpan',
@@ -147,6 +148,34 @@ class PaymentkasbonController extends Controller
                 'message' => $th->getMessage()
             ], 200);
         }
+    }
+
+    public function UpdateKasbon($transaction_id, $user_id) {
+        $kasbon = Kasbon::select([
+                                DB::raw('SUM(amount) as amount')
+                            ])
+                          ->where('user_id', $user_id)
+                          ->whereIn('status', [1,2,3])
+                          ->where('kasbon_type', 1)
+                          ->first();
+        $amount_kasbon = $kasbon->amount ?? 0;
+
+        $bayar = Kasbon::select([
+                    DB::raw('SUM(amount) as amount')
+                ])
+                ->where('user_id', $user_id)
+                ->whereIn('status', [1,2,3])
+                ->where('kasbon_type', 2)
+                ->first();
+
+        $amount_bayar = $bayar->amount ?? 0;
+        $total_kasbon = floatval($amount_kasbon - $amount_bayar);
+        $update_total = Kasbon::where('id', $transaction_id)
+                        ->update([
+                                'total_kasbon' => $total_kasbon
+                        ]);
+
+        return true;
     }
 
     public function generateNumber($number, $application) {

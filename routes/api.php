@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\KasbonController;
+use App\Http\Controllers\Api\PaymentkasbonController;
 use App\Http\Controllers\Api\ComboController;
 
 /*
@@ -34,8 +35,8 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::post('/kasbon/view/{application}', [KasbonController::class, 'view']);
     Route::post('/kasbon/store/{application}', [KasbonController::class, 'store']);
     # Pembayaran Kasbon
-    Route::post('/payment-kasbon/view/{application}', [KasbonController::class, 'view']);
-    Route::post('/payment-kasbon/store/{application}', [KasbonController::class, 'store']);
+    Route::post('/payment-kasbon/view/{application}', [PaymentkasbonController::class, 'view']);
+    Route::post('/payment-kasbon/store/{application}', [PaymentkasbonController::class, 'store']);
 
 
     // Profile
