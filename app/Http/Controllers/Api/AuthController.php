@@ -7,6 +7,7 @@ use App\Models\AccessMenu;
 use App\Models\AccessRoles;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Api\Approval;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
@@ -121,9 +122,9 @@ class AuthController extends Controller
     private function access_menu($application) {
         $user_id = Auth::id();
         $user = User::find($user_id);
-        $position_id = $user->status == "Active" ? $user->position_id : "";
+        $position_id = $user->status == "Active" ? explode(",",$user->position_id) : [];
         $role = AccessRoles::selectRaw('menu_id')
-                            ->where('position_id', $position_id)
+                            ->whereIn('position_id', $position_id)
                             ->get()
                             ->toArray();
 
@@ -153,7 +154,7 @@ class AuthController extends Controller
 
     public function updateUser(Request $request, $application)
     {
-        try {
+        // try {
             //Validated
             $validateUser = Validator::make($request->all(), 
             [
@@ -176,7 +177,7 @@ class AuthController extends Controller
             if(!$user){
                 return response()->json([
                     'status' => false,
-                    'message' => 'user tidak ditemukan',
+                    'message' => 'User tidak ditemukan',
                     'errors' => $validateUser->errors()
                 ], 200);
             }
@@ -192,27 +193,45 @@ class AuthController extends Controller
                 ], 200);
             }
 
+            $check_ktp = User::where('ktp_number', $request->ktp_number)
+                                 ->whereNotIn('id', [$request->user_id])
+                                 ->first();
+            if($check_ktp){
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Tidak dapat update data, Nomor Ktp sudah dipakai. silahkan cek kembali',
+                    'errors' => $validateUser->errors()
+                ], 200);
+            }
+
+            $company_id = $request->company_id ?? "";
+
             $user->fullname = $request->fullname;
             $user->email = $request->email ?? "user@mail.com";
             $user->application = $application;
             $user->position_id = $request->position_id ?? "";
             $user->phone_number = $request->phone_number;
-            $user->company_id = $request->company_id ?? "";
+            $user->company_id = $company_id;
             $user->ktp_number = $request->ktp_number ?? "";
             $user->address = $request->address ?? "";
             $user->update();
+
+            if ($user->status !== "Active") {
+                $transaction_id = $request->user_id . $application . 999; 
+                $Approval = (new Approval)->store($request, $transaction_id, $company_id, 'profile', $application);
+            }
 
             return response()->json([
                 'status' => true,
                 'message' => 'Update Successfully',
             ], 200);
 
-        } catch (\Throwable $th) {
-            return response()->json([
-                'status' => false,
-                'message' => $th->getMessage()
-            ], 200);
-        }
+        // } catch (\Throwable $th) {
+        //     return response()->json([
+        //         'status' => false,
+        //         'message' => $th->getMessage()
+        //     ], 200);
+        // }
     }
 
      public function updateProfile(Request $request, $application)

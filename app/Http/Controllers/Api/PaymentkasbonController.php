@@ -7,6 +7,8 @@ use App\Models\Kasbon;
 use App\Models\Employee;
 use App\Models\Activities;
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Api\KasbonController;
+use App\Http\Controllers\Api\Approval;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -87,8 +89,25 @@ class PaymentkasbonController extends Controller
                 ], 200);
             }
 
+            $dash_kasbon = (new KasbonController)->dashboard($request, $application, 1);
+            $dash_bayar = (new KasbonController)->dashboard($request, $application, 2);
+
+            $kasbon  = $dash_kasbon;
+            $bayar   = floatval($dash_bayar + $request->amount);
+            $total_kasbon  = floatval($dash_kasbon - $dash_bayar);
+
+            if ($total_kasbon < 0) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Pembayaran melebihi kasbon, Silahkan cek kembali',
+                    'errors' => $validateUser->errors()
+                ], 200);
+            }
+
             if ($exist) {
                 $transaction_id = $request->id;
+                $status = $exist->status ?? 1;
+
                 $data = Kasbon::find($transaction_id);
                 $data->user_id = $request->user_id;
                 $data->fullname = $fullname;
@@ -96,7 +115,7 @@ class PaymentkasbonController extends Controller
                 $data->application = $application;
                 $data->amount = $request->amount;
                 $data->remark = $request->remark;
-                $data->status = $request->status ?? 1;
+                $data->status = $status;
                 $data->kasbon_type = 2;
                 $data->updated_by = $user_id;
                 $data->updated_at = $now;
@@ -106,7 +125,7 @@ class PaymentkasbonController extends Controller
 
             } else {
                 $transaction_id = $this->generateNumber(2, $application);
-
+                $status = $exist->status ?? 1;
                 $data = new Kasbon;
                 $data->id = $transaction_id;
                 $data->user_id = $request->user_id;
@@ -115,7 +134,7 @@ class PaymentkasbonController extends Controller
                 $data->application = $application;
                 $data->amount = $request->amount;
                 $data->remark = $request->remark ?? "Pembayaran";
-                $data->status = $request->status ?? 1;
+                $data->status = $status;
                 $data->kasbon_type = 2;
                 $data->created_by = $user_id;
                 $data->updated_by = $user_id;
@@ -126,6 +145,11 @@ class PaymentkasbonController extends Controller
 
                 $descriptions = " melakukan pengajuan pembayaran kasbon sebesar " . $request->amount;
             }
+
+            if ($status == 1) {
+                $Approval = (new Approval)->store($request, $transaction_id, $company_id, 'payment-kasbon', $application);
+            }
+
 
             $act = Activities::create([
                 'application' => $application,
