@@ -6,6 +6,8 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\KasbonController;
 use App\Http\Controllers\Api\PaymentkasbonController;
 use App\Http\Controllers\Api\ComboController;
+use App\Http\Controllers\Api\NotificationController;
+use App\Http\Controllers\Api\ApprovalController;
 
 /*
 |--------------------------------------------------------------------------
@@ -43,4 +45,13 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::post('/profile/update/{application}', [AuthController::class, 'updateUser']);
     Route::post('/profile/validate/{application}', [AuthController::class, 'updateProfile']);
     Route::post('/profile/update-password/{application}', [AuthController::class, 'updatePassword']);
+
+
+    #notification
+    Route::post('/notification/list/{application}', [NotificationController::class, 'list']);
+    Route::post('/notification/markAsRead/{application}', [NotificationController::class, 'markAsRead']);
+    Route::post('/approval/list/{application}', [ApprovalController::class, 'list']);
+    Route::post('/approve/{application}', [ApprovalController::class, 'view']);
+    Route::post('/reject/{application}', [ApprovalController::class, 'store']);
+
 });

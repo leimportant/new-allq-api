@@ -7,7 +7,7 @@ use App\Models\AccessMenu;
 use App\Models\AccessRoles;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\Api\Approval;
+use App\Http\Controllers\Api\ApprovalController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
@@ -154,7 +154,7 @@ class AuthController extends Controller
 
     public function updateUser(Request $request, $application)
     {
-        // try {
+        try {
             //Validated
             $validateUser = Validator::make($request->all(), 
             [
@@ -218,7 +218,7 @@ class AuthController extends Controller
 
             if ($user->status !== "Active") {
                 $transaction_id = $request->user_id . $application . 999; 
-                $Approval = (new Approval)->store($request, $transaction_id, $company_id, 'profile', $application);
+                $Approval = (new ApprovalController)->store($request, $transaction_id, $company_id, 'profile', $application);
             }
 
             return response()->json([
@@ -226,12 +226,12 @@ class AuthController extends Controller
                 'message' => 'Update Successfully',
             ], 200);
 
-        // } catch (\Throwable $th) {
-        //     return response()->json([
-        //         'status' => false,
-        //         'message' => $th->getMessage()
-        //     ], 200);
-        // }
+        } catch (\Throwable $th) {
+            return response()->json([
+                'status' => false,
+                'message' => $th->getMessage()
+            ], 200);
+        }
     }
 
      public function updateProfile(Request $request, $application)

@@ -8,7 +8,7 @@ use App\Models\Employee;
 use App\Models\Activities;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Api\KasbonController;
-use App\Http\Controllers\Api\Approval;
+use App\Http\Controllers\Api\ApprovalController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -147,7 +147,7 @@ class PaymentkasbonController extends Controller
             }
 
             if ($status == 1) {
-                $Approval = (new Approval)->store($request, $transaction_id, $company_id, 'payment-kasbon', $application);
+                $Approval = (new ApprovalController)->store($request, $transaction_id, $company_id, 'payment-kasbon', $application);
             }
 
 

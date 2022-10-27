@@ -6,7 +6,9 @@ use App\Models\Documents;
 use App\Models\documentApproval;
 use App\Models\configApproval;
 use App\Models\Activities;
+use App\Models\User;
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Api\NotificationController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -15,8 +17,38 @@ use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use Log;
 
-class Approval extends Controller
+class ApprovalController extends Controller
 {
+
+    public function list(Request $request, $application)
+    {
+        $user_id = $request->user_id ?? Auth::id();
+        $transaction_id = $request->q;
+        $year = $request->year;
+        
+        $sql =  Documents::with('approval')
+                        ->where('application', $application)
+                        ->where('transaction_id', $transaction_id);
+
+        $data = $sql->get();
+        $result = [];
+        foreach($data as $row) {
+            $approval = $row->approval ?? [];
+            foreach($approval as $val) {
+
+                $user = User::find($val->user_id);
+                $val->fullname = $user->fullname ?? "";
+                $row->approval = $val;
+            }
+            $result[] = $row;
+        }
+
+        return response()->json([
+            'status' => true,
+            'data' => $result,
+        ], 200);
+    }
+
 
     public function checkDocument($transaction_id) {
         $data = Documents::where('transaction_id', $transaction_id)
@@ -120,7 +152,9 @@ class Approval extends Controller
             $last = $this->checkLastApproval($transaction_id);
             
             $next_approval = $last->user_id ?? $next_apprl; 
-            $descriptions = "Pengajuan terkirim, menunggu approval " . $next_approval;
+
+            $user = User::find($next_approval);
+            $descriptions = "Pengajuan terkirim, menunggu approval " . $user->fullname ?? "-";
             if ($next_approval === "-") {
                 $status = 4;
                 $descriptions = "Pengajuan pending";
@@ -134,17 +168,30 @@ class Approval extends Controller
                                 'route' => $route
                             ]);
 
+
+
             $act = Activities::create([
                     'application' => $application,
                     'transaction_id' => $transaction_id,
                     'user_id' => $userId,
                     'descriptions' => $descriptions,
                 ]);
+
+            $notif = (new NotificationController)->send($userId, $next_approval, $route, $transaction_id, $application, $descriptions);
         }
         
         return response()->json([
             'status' => true,
             'message' => "Notifikasi Pengajuan anda berhasil",
         ], 200);
+    }
+
+    public function approve($request, $transaction_id, $company_id, $route, $application)
+    {
+        $userId = Auth::id();
+        $now = Carbon::now()->timestamp;
+        // Cek document apakah sudah masuk approval dan status nya
+        $doc = $this->checkDocument($transaction_id);
+
     }
 }

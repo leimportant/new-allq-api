@@ -8,7 +8,7 @@ use App\Models\Employee;
 use App\Models\Activities;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Api\PaymentkasbonController;
-use App\Http\Controllers\Api\Approval;
+use App\Http\Controllers\Api\ApprovalController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -47,7 +47,7 @@ class KasbonController extends Controller
         }
 
 
-        $data = $sql->paginate(10);
+        $data = $sql->orderBy('created_at', 'desc')->paginate(10);
 
         $kasbon  = $this->dashboard($request, $application, 1);
         $bayar  = $this->dashboard($request, $application, 2);
@@ -203,7 +203,7 @@ class KasbonController extends Controller
 
 
             if ($status == 1) {
-                $Approval = (new Approval)->store($request, $transaction_id, $company_id, 'kasbon', $application);
+                $Approval = (new ApprovalController)->store($request, $transaction_id, $company_id, 'kasbon', $application);
             }
 
             $act = Activities::create([
