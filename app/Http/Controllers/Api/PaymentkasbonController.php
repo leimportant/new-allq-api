@@ -39,6 +39,7 @@ class PaymentkasbonController extends Controller
 
     public function store(Request $request, $application)
     {
+        DB::beginTransaction();
         try {
 
             $user_id = Auth::id();
@@ -96,10 +97,14 @@ class PaymentkasbonController extends Controller
             $bayar   = floatval($dash_bayar + $request->amount);
             $total_kasbon  = floatval($dash_kasbon - $dash_bayar);
 
+
+            $bayar_before   = floatval($dash_bayar);
+            $sisa_kasbon  = floatval($kasbon - $bayar_before);
+
             if ($total_kasbon < 0) {
                 return response()->json([
                     'status' => false,
-                    'message' => 'Pembayaran melebihi kasbon, Silahkan cek kembali',
+                    'message' => 'Pembayaran melebihi kasbon, Sisa kasbon hanya ' . $sisa_kasbon,
                     'errors' => $validateUser->errors()
                 ], 200);
             }
@@ -145,9 +150,10 @@ class PaymentkasbonController extends Controller
 
                 $descriptions = " melakukan pengajuan pembayaran kasbon sebesar " . $request->amount;
             }
-
+            $Approval = [];
             if ($status == 1) {
-                $Approval = (new ApprovalController)->store($request, $transaction_id, $company_id, 'payment-kasbon', $application);
+                $descriptions = $fullname . $descriptions;
+                $Approval = (new ApprovalController)->store($request, $transaction_id, $company_id, 'payment-kasbon', $application, $descriptions);
             }
 
 
@@ -163,14 +169,14 @@ class PaymentkasbonController extends Controller
             return response()->json([
                 'status' => true,
                 'message' => 'Data Berhasil di simpan',
-                "transaction_id" => $transaction_id
+                "transaction_id" => $transaction_id,
+                "notification" => $Approval
             ], 200);
 
-        } catch (\Throwable $th) {
-            return response()->json([
-                'status' => false,
-                'message' => $th->getMessage()
-            ], 200);
+            DB::commit();
+        } catch (\Exception $ex) {
+            DB::rollback();
+            return response()->json(['error' => $ex->getMessage()], 500);
         }
     }
 

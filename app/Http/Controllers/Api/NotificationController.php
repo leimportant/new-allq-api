@@ -67,6 +67,7 @@ class NotificationController extends Controller
         // want to broadcast NewMessageNotification event
         event(new MessageNotification($message));
           
+        return $message;
     }
 
     public function generateNumber($application) {

@@ -215,15 +215,17 @@ class AuthController extends Controller
             $user->ktp_number = $request->ktp_number ?? "";
             $user->address = $request->address ?? "";
             $user->update();
-
+            $Approval = [];
             if ($user->status !== "Active") {
-                $transaction_id = $request->user_id . $application . 999; 
-                $Approval = (new ApprovalController)->store($request, $transaction_id, $company_id, 'profile', $application);
+                $transaction_id = $request->user_id; 
+                $message  = $request->fullname.  " update profile untuk aktivasi akun"; 
+                $Approval = (new ApprovalController)->store($request, $transaction_id, $company_id, 'profile', $application, $message);
             }
 
             return response()->json([
                 'status' => true,
-                'message' => 'Update Successfully',
+                'message' => 'Update Berhasil',
+                "notification" => $Approval
             ], 200);
 
         } catch (\Throwable $th) {
