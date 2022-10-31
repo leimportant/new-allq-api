@@ -39,8 +39,8 @@ class PaymentkasbonController extends Controller
 
     public function store(Request $request, $application)
     {
-        DB::beginTransaction();
-        try {
+        // DB::beginTransaction();
+        // try {
 
             $user_id = Auth::id();
             $now = Carbon::now()->timestamp;
@@ -173,11 +173,11 @@ class PaymentkasbonController extends Controller
                 "notification" => $Approval
             ], 200);
 
-            DB::commit();
-        } catch (\Exception $ex) {
-            DB::rollback();
-            return response()->json(['error' => $ex->getMessage()], 500);
-        }
+        //     DB::commit();
+        // } catch (\Exception $ex) {
+        //     DB::rollback();
+        //     return response()->json(['error' => $ex->getMessage()], 500);
+        // }
     }
 
     public function UpdateKasbon($transaction_id, $user_id) {
