@@ -29,6 +29,10 @@ class PurchaseorderController extends Controller
         $year = substr($request->period,0,4);
         
         $sql =  Purchaseorder::with('items')
+                        ->select([
+                            DB::raw('purchase_order.*'),
+                            DB::raw('statuses.name as status_name')
+                        ])
                         ->leftJoin('statuses', 'statuses.id', '=', 'purchase_order.status')
                         ->whereNull('deleted_at')
                         ->where('application', $application)
@@ -41,6 +45,7 @@ class PurchaseorderController extends Controller
 
         if ($filter) {
             $sql->where('remark', 'LIKE', '%' . $filter. '%')
+                    ->where('purchase_order.id', 'LIKE', '%' . $filter. '%')
                     ->orwhere('date', 'LIKE', '%' . $filter. '%')
                     ->orwhere('supplier_id', 'LIKE', '%' . $filter. '%')
                     ->orwhere('total_amount', 'LIKE', '%' . $filter. '%');

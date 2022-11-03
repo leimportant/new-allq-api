@@ -17,24 +17,21 @@ class MessageNotification implements ShouldBroadcastNow
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    public $notification;
-    /**
-     * Create a new event instance.
-     *
-     * @return void
-     */
-    public function __construct(Notification $notification)
+    public $message;
+
+    public function __construct($message)
     {
-        $this->notification = $notification;
+        $this->message = $message;
     }
 
-    /**
-     * Get the channels the event should broadcast on.
-     *
-     * @return \Illuminate\Broadcasting\Channel|array
-     */
     public function broadcastOn()
     {
-        return new PrivateChannel('user.'.$this->notification->assign_to);
+        return ['my-channel'];
     }
+
+    public function broadcastAs()
+    {
+        return 'my-event';
+    }
+
 }

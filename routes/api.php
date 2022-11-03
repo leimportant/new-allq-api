@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\ComboController;
 use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\ApprovalController;
 use App\Http\Controllers\Api\PurchaseorderController;
+use App\Http\Controllers\Api\UploadController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -47,7 +48,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
 
     #notification
     Route::post('/notification/list/{application}', [NotificationController::class, 'list']);
-    Route::post('/notification/markAsRead/{application}', [NotificationController::class, 'markAsRead']);
+    Route::post('/notification/mark-as-read/{application}', [NotificationController::class, 'markAsRead']);
     Route::post('/approval/list/{application}', [ApprovalController::class, 'list']);
     Route::post('/approve/{application}', [ApprovalController::class, 'approve']);
     Route::post('/reject/{application}', [ApprovalController::class, 'reject']);
@@ -55,5 +56,9 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::post('/purchase-order/list/{application}', [PurchaseorderController::class, 'list']);
     Route::post('/purchase-order/view/{application}', [PurchaseorderController::class, 'view']);
     Route::post('/purchase-order/store/{application}', [PurchaseorderController::class, 'store']);
+
+    #upload
+    Route::post('/upload/list/{application}', [UploadController::class, 'list']);
+    Route::post('/upload/store/{application}', [UploadController::class, 'store']);
 
 });

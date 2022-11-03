@@ -17,10 +17,10 @@ class NotificationController extends Controller
 {
     public function list(Request $request, $application)
     {
-        $user_id = $request->user_id ?? Auth::id();
+        $user_id = Auth::id();
         $filter = $request->id;
         $read = $request->read;
-        $year = $request->year;
+        $year = $request->year ?? date("Y");
         
         $sql =  Notification::select([
                             DB::raw('notifications.*')
@@ -30,6 +30,12 @@ class NotificationController extends Controller
                         ->where(function($query) use($user_id) {
                             $query->where('assign_to', $user_id); 
                         });
+        
+        if ($read == 1) {
+            $sql->whereNotNull('read_at');
+        } else {
+            $sql->whereNull('read_at');
+        }
 
         if ($filter) {
             $sql->where('route', 'LIKE', '%' . $filter. '%')
@@ -49,6 +55,24 @@ class NotificationController extends Controller
         ], 200);
     }
 
+    public function markAsRead(Request $request, $application)
+    {
+        $user_id = Auth::id();
+        $id = explode(",",$request->id);
+
+        Notification::whereIn('id', $id)
+                        ->where('assign_to', $user_id)
+                            ->update([
+                                'read_at' => date("Y-m-d H:i:s")
+                        ]);
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Data Berhasil',
+        ], 200);
+
+    }
+
     public function send($from, $to, $route, $transaction_id, $application, $descriptions)
     {
 
@@ -65,17 +89,17 @@ class NotificationController extends Controller
         $message->setAttribute('message', $descriptions);
         $message->save();
         
-        $pusher = new \Pusher\Pusher(
-			'ca9f78e3c7f352d4843f',
-			'cc591e33ac8a59e8cb00',
-			'1498493',
-			[
-				'cluster' => 'ap1',
-				'useTLS' => true
-			]
-		);
+        // $pusher = new \Pusher\Pusher(
+		// 	'ca9f78e3c7f352d4843f',
+		// 	'cc591e33ac8a59e8cb00',
+		// 	'1498493',
+		// 	[
+		// 		'cluster' => 'ap1',
+		// 		'useTLS' => true
+		// 	]
+		// );
 		  
-		$pusher->trigger('my-channel', 'my-event', $message);
+		// $pusher->trigger('my-channel', 'my-event', $message);
         // want to broadcast NewMessageNotification event
         event(new MessageNotification($message));
           
