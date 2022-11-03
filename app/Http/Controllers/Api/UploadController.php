@@ -118,7 +118,7 @@ class UploadController extends Controller
             $imageName =  Str::random(10).'.'.$extension;
 
             $url = Storage::disk('public')->put($storage. $imageName, base64_decode($image));
-            $path =  "app/public" .  "/" . $imageName;
+            $path =  "app/public" .  "/" . $storage . $imageName;
             
             if ($url) {
                 $data = new Upload;
