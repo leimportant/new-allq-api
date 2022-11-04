@@ -51,10 +51,33 @@ class NotificationController extends Controller
 
         return response()->json([
             'status' => true,
+            'total_unread' => $this->totalNotification($application, 0),
+            'total_read' => $this->totalNotification($application, 1),
             'data' => $data,
         ], 200);
     }
 
+    public function totalNotification($application, $read)
+    {
+        $user_id = Auth::id();
+        $sql =  Notification::where('application', $application)
+                            ->where(function($query) use($user_id) {
+                                $query->where('assign_to', $user_id); 
+                            });
+
+        if ($read == 1) {
+            $sql->whereNotNull('read_at');
+        } else {
+            $sql->whereNull('read_at');
+        }
+
+        $data = $sql->get();
+
+        $count = count($data);
+
+        return $count;
+
+    }
     public function markAsRead(Request $request, $application)
     {
         $user_id = Auth::id();

@@ -193,17 +193,18 @@ class AuthController extends Controller
                 ], 200);
             }
 
-            $check_ktp = User::where('ktp_number', $request->ktp_number)
+            if ($request->ktp_number) {
+                $check_ktp = User::where('ktp_number', $request->ktp_number)
                                  ->whereNotIn('id', [$request->user_id])
                                  ->first();
-            if($check_ktp){
-                return response()->json([
-                    'status' => false,
-                    'message' => 'Tidak dapat update data, Nomor Ktp sudah dipakai. silahkan cek kembali',
-                    'errors' => $validateUser->errors()
-                ], 200);
+                if($check_ktp){
+                    return response()->json([
+                        'status' => false,
+                        'message' => 'Tidak dapat update data, Nomor Ktp sudah dipakai. silahkan cek kembali',
+                        'errors' => $validateUser->errors()
+                    ], 200);
+                }
             }
-
             $company_id = $request->company_id ?? "";
 
             $user->fullname = $request->fullname;
@@ -218,13 +219,17 @@ class AuthController extends Controller
             $Approval = [];
             if ($user->status !== "Active") {
                 $transaction_id = $request->user_id; 
-                $message  = $request->fullname.  " update profile untuk aktivasi akun"; 
+                $message  = $request->fullname.  " Update profile untuk aktivasi akun"; 
                 $Approval = (new ApprovalController)->store($request, $transaction_id, $company_id, 'profile', $application, $message);
             }
 
+            $user = User::where('id', $request->user_id)
+                                    ->first();
+                                    
             return response()->json([
                 'status' => true,
                 'message' => 'Update Berhasil',
+                'user' => $user,
                 "notification" => $Approval
             ], 200);
 
@@ -266,9 +271,13 @@ class AuthController extends Controller
             $user->status = $request->status ?? "Pending";
             $user->update();
 
+            $user = User::where('id', $request->user_id)
+                          ->first();
+
             return response()->json([
                 'status' => true,
                 'message' => 'Update Berhasil',
+                'user' => $user,
             ], 200);
 
         } catch (\Throwable $th) {

@@ -103,7 +103,7 @@ class PaymentkasbonController extends Controller
             if ($total_kasbon < 0) {
                 return response()->json([
                     'status' => false,
-                    'message' => 'Pembayaran melebihi kasbon, Sisa kasbon hanya ' . $sisa_kasbon,
+                    'message' => 'Pembayaran melebihi kasbon, Sisa kasbon hanya Rp. ' . number_format($sisa_kasbon, 0),
                     'errors' => $validateUser->errors()
                 ], 200);
             }
@@ -125,7 +125,7 @@ class PaymentkasbonController extends Controller
                 $data->updated_at = $now;
                 $data->update();
 
-                $descriptions = " edit pengajuan pembayaran kasbon sebesar " . $request->amount;
+                $descriptions = " edit pengajuan pembayaran kasbon sebesar Rp. " . number_format($request->amount, 0);
 
             } else {
                 $transaction_id = $this->generateNumber(2, $application);
@@ -147,7 +147,7 @@ class PaymentkasbonController extends Controller
                 $data->save();
 
 
-                $descriptions = " melakukan pengajuan pembayaran kasbon sebesar " . $request->amount;
+                $descriptions = " melakukan pengajuan pembayaran kasbon sebesar Rp. " . number_format($request->amount, 0);
             }
             $Approval = [];
             if ($status == 1) {

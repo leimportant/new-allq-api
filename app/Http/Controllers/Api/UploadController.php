@@ -17,6 +17,28 @@ use Log;
 
 class UploadController extends Controller
 {
+    public function list(Request $request, $application)
+    {
+        $user_id = Auth::id();
+        $transaction_id = $request->transaction_id;
+        $filter = $request->q;
+        $route = $request->route;
+        
+        $sql =  Upload::where('application', $application)
+                        ->where('transaction_id', $transaction_id)
+                        ->where('route', $route);
+
+        if ($filter) {
+            $sql->where('remark', 'LIKE', '%' . $filter. '%');
+        }
+
+        $data = $sql->orderBy('created_at', 'desc')->paginate(10);
+
+        return response()->json([
+            'status' => true,
+            'data' => $data,
+        ], 200);
+    }
 
     public function delete(Request $request, $application)
     {
@@ -27,10 +49,7 @@ class UploadController extends Controller
 
             $validateUser = Validator::make($request->all(), 
             [
-                'id' => 'required',
-                'transaction_id' => 'required',
-                'route' => 'required',
-                
+                'id' => 'required'
             ]);
 
             if($validateUser->fails()){
@@ -51,12 +70,13 @@ class UploadController extends Controller
                 ], 200);
             }
 
-            $storage = "upload" . "/".  $data->route . "/" . $data->transaction_id . "/";
-            $imageName = $storage. $data->photo;
+            $path = $data->path;
+            $photo = $data->photo;
+            $storage = "upload" . $request->route . $request->transaction_id;
 
-            if(file_exists(storage_path($imageName))){
-                 unlink(storage_path($imageName));
-            }else{
+            $url = Storage::disk('public')->delete($path);
+
+            if(!$url) {
                  return response()->json([
                     'status' => false,
                     'message' => 'File tidak di temukan',
@@ -118,7 +138,7 @@ class UploadController extends Controller
             $imageName =  Str::random(10).'.'.$extension;
 
             $url = Storage::disk('public')->put($storage. $imageName, base64_decode($image));
-            $path =  "app/public" .  "/" . $storage . $imageName;
+            $path =  $storage . $imageName;
             
             if ($url) {
                 $data = new Upload;

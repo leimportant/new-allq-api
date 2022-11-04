@@ -177,7 +177,7 @@ class KasbonController extends Controller
                 $data->updated_at = $now;
                 $data->update();
 
-                $descriptions = " edit pengajuan kasbon sebesar " . $request->amount;
+                $descriptions = " edit pengajuan kasbon sebesar Rp. " . number_format($request->amount, 0);
 
             } else {
                 $transaction_id = $this->generateNumber(1, $application);
@@ -199,7 +199,7 @@ class KasbonController extends Controller
                 $data->save();
 
 
-                $descriptions = " melakukan pengajuan kasbon sebesar " . $request->amount;
+                $descriptions = " melakukan pengajuan kasbon sebesar Rp. " . number_format($request->amount, 0);
             }
             $Approval = [];
 

@@ -60,5 +60,6 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     #upload
     Route::post('/upload/list/{application}', [UploadController::class, 'list']);
     Route::post('/upload/store/{application}', [UploadController::class, 'store']);
+    Route::post('/upload/delete/{application}', [UploadController::class, 'delete']);
 
 });

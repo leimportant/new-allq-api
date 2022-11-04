@@ -37,6 +37,12 @@ class ComboController extends Controller
             case 'year':
                 $data = $this->getYear($request, $application);
                 break;
+            case 'material':
+                $data = $this->getMaterial($request, $application);
+                break;
+            case 'supplier':
+                $data = $this->getSupplier($request, $application);
+                break;
             default:
                 $data = [];
                 break;
@@ -109,6 +115,35 @@ class ComboController extends Controller
         if ($request->q) {
             $sql->where('id', 'LIKE', '%' . $request->q . '%')
                 ->orwhere('fullname','LIKE', '%' . $request->q . '%')
+                ->orwhere('phone_number', 'LIKE', '%' . $request->q . '%');
+        }
+
+        $data = $sql->paginate();
+
+        return $data;
+    }
+
+    private function getMaterial($request, $application) {
+        $sql =  User::where('application', $application)
+                            ->where('company_id', $request->company_id);
+
+        if ($request->q) {
+            $sql->where('id', 'LIKE', '%' . $request->q . '%')
+                ->orwhere('name','LIKE', '%' . $request->q . '%');
+        }
+
+        $data = $sql->paginate();
+
+        return $data;
+    }
+
+    private function getSupplier($request, $application) {
+        $sql =  User::where('application', $application)
+                            ->where('company_id', $request->company_id);
+
+        if ($request->q) {
+            $sql->where('id', 'LIKE', '%' . $request->q . '%')
+                ->orwhere('name','LIKE', '%' . $request->q . '%')
                 ->orwhere('phone_number', 'LIKE', '%' . $request->q . '%');
         }
 
