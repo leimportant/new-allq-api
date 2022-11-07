@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Storage;
 use Carbon\Carbon;
+use Intervention\Image\Facades\Image as Image;
 use Log;
 
 class UploadController extends Controller
@@ -33,6 +34,11 @@ class UploadController extends Controller
         }
 
         $data = $sql->orderBy('created_at', 'desc')->paginate(10);
+
+        $data->getCollection()->transform(function ($value) use ($application) {
+            $value->public_url = $this->urlImage($value->id, $application);
+            return $value;
+        });
 
         return response()->json([
             'status' => true,
@@ -168,5 +174,34 @@ class UploadController extends Controller
                 'message' => $th->getMessage()
             ], 200);
         }
+    }
+
+    public function loadImage(Request $request, $application)
+    {
+        try {
+            $data = Upload::find($request->id);
+            $storage =  $data->path ?? "";
+
+            $destinationPath = storage_path('app/public') . '/' . $storage;
+            $imgFile = Image::make($destinationPath);
+            return $imgFile->response('jpg');
+
+        } catch (\Throwable $th) {
+            return response()->json([
+                'status' => false,
+                'message' => $th->getMessage()
+            ], 200);
+        }
+    }
+
+    public function urlImage($id, $application)
+    {
+        $data = Upload::where('id', $id)
+                        ->first();
+        
+        if (!$data) {
+            return '';
+        }
+        return env('BASE_URL') . "/api/image/". $application. "?id=" .$data->id;
     }
 }

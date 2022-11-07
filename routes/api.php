@@ -23,6 +23,7 @@ use App\Http\Controllers\Api\UploadController;
 
 Route::post('/register/{application}', [AuthController::class, 'createUser']);
 Route::post('/login/{application}', [AuthController::class, 'loginUser']);
+Route::get('/image/{application}', [UploadController::class, 'loadImage']);
 
 Route::middleware('auth:sanctum')->get('/user/{application}', function (Request $request) {
     return $request->user();
@@ -61,5 +62,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::post('/upload/list/{application}', [UploadController::class, 'list']);
     Route::post('/upload/store/{application}', [UploadController::class, 'store']);
     Route::post('/upload/delete/{application}', [UploadController::class, 'delete']);
+
+    
 
 });

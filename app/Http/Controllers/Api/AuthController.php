@@ -5,12 +5,16 @@ namespace App\Http\Controllers\Api;
 use App\Models\User;
 use App\Models\AccessMenu;
 use App\Models\AccessRoles;
+use App\Models\Upload;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Api\ApprovalController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+use Intervention\Image\Facades\Image as Image;
+use Illuminate\Support\Str;
+use Storage;
 
 class AuthController extends Controller
 {
@@ -53,6 +57,7 @@ class AuthController extends Controller
                 'token_type'  => 'bearer',
                 'token' => $user->createToken("API TOKEN")->plainTextToken,
                 'user' => $user,
+                'image' => "",
                 'user_activity' => $user_activity,
                 'access_menu' => $access_menu,
             ], 200);
@@ -101,12 +106,16 @@ class AuthController extends Controller
 
             $access_menu = $user == "Active" ? $this->access_menu($application) : [];
             $user_activity = $user !== "Active" ? "Status Akun anda *" . $user->status . "*, Hubungi admin untuk verifikasi" : "";
+
+            $user_id = $user->id ?? "";
+            $image = $this->loadImage($user_id, $application);
             return response()->json([
                 'status' => true,
                 'message' => 'Login Berhasil',
                 'token_type'   => 'bearer',
                 'token' => $user->createToken("API TOKEN")->plainTextToken,
                 'user' => $user,
+                'image' => $image,
                 'user_activity' => $user_activity,
                 'access_menu' => $access_menu,
             ], 200);
@@ -225,11 +234,12 @@ class AuthController extends Controller
 
             $user = User::where('id', $request->user_id)
                                     ->first();
-                                    
+            $image = $this->loadImage($request->user_id, $application);
             return response()->json([
                 'status' => true,
                 'message' => 'Update Berhasil',
                 'user' => $user,
+                'image' => $image,
                 "notification" => $Approval
             ], 200);
 
@@ -274,9 +284,11 @@ class AuthController extends Controller
             $user = User::where('id', $request->user_id)
                           ->first();
 
+            $image = $this->loadImage($request->user_id, $application);
             return response()->json([
                 'status' => true,
                 'message' => 'Update Berhasil',
+                'image' => $image,
                 'user' => $user,
             ], 200);
 
@@ -329,6 +341,18 @@ class AuthController extends Controller
                 'message' => $th->getMessage()
             ], 200);
         }
+    }
+
+    public function loadImage($user_id, $application)
+    {
+        $data = Upload::where('transaction_id', $user_id)
+                        ->where('route', 'profile')
+                        ->first();
+        
+        if (!$data) {
+            return '';
+        }
+        return env('BASE_URL') . "/api/image/". $application. "?id=" .$user_id;
     }
 
 }
