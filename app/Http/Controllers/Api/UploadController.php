@@ -117,6 +117,21 @@ class UploadController extends Controller
             $fullname = $emp->fullname ?? "";
             $company_id = $emp->company_id ?? "";
 
+            if ($request->route == "profile") {
+                $data = Upload::where('transaction_id', $request->transaction_id)
+                                ->where('route', "profile")
+                                ->first();
+
+                if ($data) {
+                    $path_delete = $data->path;    
+                    $url_delete = Storage::disk('public')->delete($path_delete);
+
+                    $delete = Upload::find($data->id);
+                    $delete->delete();
+                }
+               
+            }
+
             $validateUser = Validator::make($request->all(), 
             [
                 'transaction_id' => 'required',
