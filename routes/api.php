@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\ApprovalController;
 use App\Http\Controllers\Api\PurchaseorderController;
 use App\Http\Controllers\Api\UploadController;
+use App\Http\Controllers\Api\OrdersController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -23,7 +24,8 @@ use App\Http\Controllers\Api\UploadController;
 
 Route::post('/register/{application}', [AuthController::class, 'createUser']);
 Route::post('/login/{application}', [AuthController::class, 'loginUser']);
-Route::get('/image/{application}', [UploadController::class, 'loadImage']);
+Route::get('/public/image/{application}', [UploadController::class, 'loadImage']);
+Route::get('/qrcode/{application}', [OrdersController::class, 'qrcode']);
 
 Route::middleware('auth:sanctum')->get('/user/{application}', function (Request $request) {
     return $request->user();
@@ -62,7 +64,15 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::post('/upload/list/{application}', [UploadController::class, 'list']);
     Route::post('/upload/store/{application}', [UploadController::class, 'store']);
     Route::post('/upload/delete/{application}', [UploadController::class, 'delete']);
+    Route::get('/image/{application}', [UploadController::class, 'loadImage']);
 
+    #Create Order
+    Route::post('/order-model/list/{application}', [OrdersController::class, 'list']);
+    Route::post('/order-model/view/{application}', [OrdersController::class, 'view']);
+    Route::post('/order-model/store/{application}', [OrdersController::class, 'store']);
+    Route::post('/order-model/finish/{application}', [OrdersController::class, 'finish']);
+
+    
     
 
 });

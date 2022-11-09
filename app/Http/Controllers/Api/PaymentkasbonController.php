@@ -39,7 +39,8 @@ class PaymentkasbonController extends Controller
 
     public function store(Request $request, $application)
     {
-         try {
+        try {
+            DB::beginTransaction(); 
 
             $user_id = Auth::id();
             $now = Carbon::now()->timestamp;
@@ -164,7 +165,7 @@ class PaymentkasbonController extends Controller
             ]);
 
             $this->UpdateKasbon($transaction_id, $request->user_id);
-           
+            DB::commit();
             return response()->json([
                 'status' => true,
                 'message' => 'Data Berhasil di simpan',
@@ -172,11 +173,9 @@ class PaymentkasbonController extends Controller
                 "notification" => $Approval
             ], 200);
 
-        } catch (\Throwable $th) {
-            return response()->json([
-                'status' => false,
-                'message' => $th->getMessage()
-            ], 200);
+        } catch (\Exception $ex) {
+            DB::rollback();
+            return response()->json(['error' => $ex->getMessage()], 500);
         }
     }
 

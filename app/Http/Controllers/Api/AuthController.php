@@ -352,7 +352,7 @@ class AuthController extends Controller
         if (!$data) {
             return '';
         }
-        return env('BASE_URL') . "/api/image/". $application. "?id=" .$user_id;
+        return env('BASE_URL') . "/api/image/". $application. "?user_id=" .$user_id;
     }
 
 }

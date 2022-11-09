@@ -195,6 +195,11 @@ class UploadController extends Controller
     {
         try {
             $data = Upload::find($request->id);
+
+            if ($request->user_id) {
+                $data = Upload::where('transaction_id', $request->user_id)->first();
+            }
+
             $storage =  $data->path ?? "";
 
             $destinationPath = storage_path('app/public') . '/' . $storage;

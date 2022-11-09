@@ -43,6 +43,9 @@ class ComboController extends Controller
             case 'supplier':
                 $data = $this->getSupplier($request, $application);
                 break;
+            case 'uom':
+                $data = $this->getUom($request, $application);
+                break;
             default:
                 $data = [];
                 break;
@@ -56,6 +59,19 @@ class ComboController extends Controller
 
     private function getMonth($request, $application) {
         $sql =  DB::table('months');
+
+        if ($request->q) {
+            $sql->where('id', 'LIKE', '%' . $request->q . '%')
+                ->orwhere('name','LIKE', '%' . $request->q . '%');
+        }
+
+        $data = $sql->get();
+
+        return $data;
+    }
+
+    private function getUom($request, $application) {
+        $sql =  DB::table('uoms');
 
         if ($request->q) {
             $sql->where('id', 'LIKE', '%' . $request->q . '%')

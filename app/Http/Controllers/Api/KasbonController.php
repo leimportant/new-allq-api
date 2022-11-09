@@ -110,6 +110,7 @@ class KasbonController extends Controller
     public function store(Request $request, $application)
     {
         try {
+            DB::beginTransaction();
 
             $user_id = Auth::id();
             $now = Carbon::now()->timestamp;
@@ -177,7 +178,7 @@ class KasbonController extends Controller
                 $data->updated_at = $now;
                 $data->update();
 
-                $descriptions = " edit pengajuan kasbon sebesar Rp. " . number_format($request->amount, 0);
+                $descriptions = "edit pengajuan kasbon sebesar Rp. " . number_format($request->amount, 0);
 
             } else {
                 $transaction_id = $this->generateNumber(1, $application);
@@ -199,7 +200,7 @@ class KasbonController extends Controller
                 $data->save();
 
 
-                $descriptions = " melakukan pengajuan kasbon sebesar Rp. " . number_format($request->amount, 0);
+                $descriptions = "melakukan pengajuan kasbon sebesar Rp. " . number_format($request->amount, 0);
             }
             $Approval = [];
 
@@ -216,7 +217,7 @@ class KasbonController extends Controller
             ]);
 
             $updateKasbon = (new PaymentkasbonController)->UpdateKasbon($transaction_id, $request->user_id);
-
+            DB::commit();
             return response()->json([
                 'status' => true,
                 'message' => 'Data Berhasil di simpan',
@@ -224,11 +225,9 @@ class KasbonController extends Controller
                 "notification" => $Approval
             ], 200);
 
-        } catch (\Throwable $th) {
-            return response()->json([
-                'status' => false,
-                'message' => $th->getMessage()
-            ], 200);
+        } catch (\Exception $ex) {
+            DB::rollback();
+            return response()->json(['error' => $ex->getMessage()], 500);
         }
     }
 
