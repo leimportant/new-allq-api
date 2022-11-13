@@ -24,7 +24,7 @@ class PurchaseorderController extends Controller
     public function list(Request $request, $application)
     {
         $user_id = $request->user_id ?? Auth::id();
-        $filter = $request->id;
+        $filter = $request->q;
         $month = substr($request->period,5,4);
         $year = substr($request->period,0,4);
         

@@ -14,9 +14,9 @@ class Orders extends Model
     const CREATED_AT = 'created_at';
     const UPDATED_AT = 'updated_at';
 
-    public function items()
+    public function details()
     {
-        return $this->hasMany(OrdersItem::class, 'orders_id', 'id');
+        return $this->hasMany(OrdersDetail::class, 'orders_id', 'id');
     }
 
     public function activities()

@@ -11,6 +11,8 @@ use App\Http\Controllers\Api\ApprovalController;
 use App\Http\Controllers\Api\PurchaseorderController;
 use App\Http\Controllers\Api\UploadController;
 use App\Http\Controllers\Api\OrdersController;
+use App\Http\Controllers\Api\MaterialController;
+use App\Http\Controllers\Api\SupplierController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -36,6 +38,14 @@ Route::post('/refresh', [AuthController::class, 'refresh']);
 
 Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::get('/combo/{application}', [ComboController::class, 'combo']);
+
+    Route::post('/supplier/list/{application}', [SupplierController::class, 'list']);
+    Route::post('/supplier/view/{application}', [SupplierController::class, 'view']);
+    Route::post('/supplier/store/{application}', [SupplierController::class, 'store']);
+
+    Route::post('/material/list/{application}', [MaterialController::class, 'list']);
+    Route::post('/material/view/{application}', [MaterialController::class, 'view']);
+    Route::post('/material/store/{application}', [MaterialController::class, 'store']);
 
     Route::post('/kasbon/list/{application}', [KasbonController::class, 'list']);
     Route::post('/kasbon/view/{application}', [KasbonController::class, 'view']);
@@ -72,6 +82,11 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::post('/order-model/store/{application}', [OrdersController::class, 'store']);
     Route::post('/order-model/finish/{application}', [OrdersController::class, 'finish']);
 
+    Route::post('/good-issue-material/view/{application}', [OrdersController::class, 'viewMaterial']);
+    Route::post('/good-issue-material/store/{application}', [OrdersController::class, 'storeMaterial']);
+
+    Route::post('/order-assignjob/view/{application}', [OrdersController::class, 'viewAssignjob']);
+    Route::post('/order-assignjob/store/{application}', [OrdersController::class, 'storeAssignjob']);
     
     
 

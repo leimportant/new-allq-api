@@ -7,6 +7,8 @@ use App\Models\Kasbon;
 use App\Models\Employee;
 use App\Models\Position;
 use App\Models\Activities;
+use App\Models\AccessMenu;
+use App\Models\Size;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -45,6 +47,12 @@ class ComboController extends Controller
                 break;
             case 'uom':
                 $data = $this->getUom($request, $application);
+                break;
+            case 'job':
+                $data = $this->getAssignJob($request, $application);
+                break;
+            case 'size':
+                $data = $this->getSize($request, $application);
                 break;
             default:
                 $data = [];
@@ -161,6 +169,33 @@ class ComboController extends Controller
             $sql->where('id', 'LIKE', '%' . $request->q . '%')
                 ->orwhere('name','LIKE', '%' . $request->q . '%')
                 ->orwhere('phone_number', 'LIKE', '%' . $request->q . '%');
+        }
+
+        $data = $sql->paginate();
+
+        return $data;
+    }
+
+    private function getAssignJob($request, $application) {
+        $sql =  AccessMenu::where('application', $application)
+                            ->where('is_task', $request->is_task);
+
+        if ($request->q) {
+            $sql->where('id', 'LIKE', '%' . $request->q . '%')
+                ->orwhere('name','LIKE', '%' . $request->q . '%')
+                ->orwhere('route', 'LIKE', '%' . $request->q . '%');
+        }
+
+        $data = $sql->paginate();
+
+        return $data;
+    }
+
+    private function getSize($request, $application) {
+        $sql =  Size::where('application', $application);
+
+        if ($request->q) {
+            $sql->where('id', 'LIKE', '%' . $request->q . '%');
         }
 
         $data = $sql->paginate();
