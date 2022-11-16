@@ -148,7 +148,7 @@ class ComboController extends Controller
     }
 
     private function getMaterial($request, $application) {
-        $sql =  User::where('application', $application)
+        $sql =  Material::where('application', $application)
                             ->where('company_id', $request->company_id);
 
         if ($request->q) {
@@ -162,7 +162,7 @@ class ComboController extends Controller
     }
 
     private function getSupplier($request, $application) {
-        $sql =  User::where('application', $application)
+        $sql =  Supplier::where('application', $application)
                             ->where('company_id', $request->company_id);
 
         if ($request->q) {
