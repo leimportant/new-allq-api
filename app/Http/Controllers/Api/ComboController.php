@@ -8,6 +8,8 @@ use App\Models\Employee;
 use App\Models\Position;
 use App\Models\Activities;
 use App\Models\AccessMenu;
+use App\Models\Supplier;
+use App\Models\Material;
 use App\Models\Size;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
