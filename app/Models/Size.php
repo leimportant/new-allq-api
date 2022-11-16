@@ -8,6 +8,9 @@ use Illuminate\Database\Eloquent\Model;
 class Size extends Model
 {
     use HasFactory;
+
+    public $incrementing = false;
+    
     protected $table = 'sizing';
 
     const CREATED_AT = 'created_at';

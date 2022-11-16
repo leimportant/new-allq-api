@@ -9,6 +9,8 @@ class Orders extends Model
 {
     use HasFactory;
 
+    public $incrementing = false;
+    
     protected $table = 'create_orders';
 
     const CREATED_AT = 'created_at';

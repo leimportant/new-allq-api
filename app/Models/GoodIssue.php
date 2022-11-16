@@ -9,6 +9,8 @@ class GoodIssue extends Model
 {
     use HasFactory;
 
+    public $incrementing = false;
+
     protected $table = 'good_issue';
 
     const CREATED_AT = 'created_at';

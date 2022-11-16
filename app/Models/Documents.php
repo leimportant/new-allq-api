@@ -9,6 +9,8 @@ class Documents extends Model
 {
     use HasFactory;
 
+    public $incrementing = false;
+    
     protected $table = 'documents';
 
     const CREATED_AT = 'created_at';
