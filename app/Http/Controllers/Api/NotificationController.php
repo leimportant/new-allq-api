@@ -112,17 +112,17 @@ class NotificationController extends Controller
         $message->setAttribute('message', $descriptions);
         $message->save();
         
-        // $pusher = new \Pusher\Pusher(
-		// 	'ca9f78e3c7f352d4843f',
-		// 	'cc591e33ac8a59e8cb00',
-		// 	'1498493',
-		// 	[
-		// 		'cluster' => 'ap1',
-		// 		'useTLS' => true
-		// 	]
-		// );
+        $pusher = new \Pusher\Pusher(
+			'ca9f78e3c7f352d4843f',
+			'cc591e33ac8a59e8cb00',
+			'1498493',
+			[
+				'cluster' => 'ap1',
+				'useTLS' => true
+			]
+		);
 		  
-		// $pusher->trigger('my-channel', 'my-event', $message);
+		$pusher->trigger('my-channel', 'my-event', $message);
         // want to broadcast NewMessageNotification event
         event(new MessageNotification($message));
           

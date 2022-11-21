@@ -10,6 +10,8 @@ class Notification extends Model
 {
     use HasFactory, Notifiable;
 
+    public $incrementing = false;
+    
     protected $table = 'notifications';
 
     const CREATED_AT = 'created_at';
