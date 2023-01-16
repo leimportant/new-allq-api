@@ -267,8 +267,14 @@ class OrdersController extends Controller
             ], 200);
         }
 
-        $data = Orders::find($request->id);
-        return QRCode::text($data->id)->svg();   
+        $form = explode("!", $request->id);
+
+        $id = $form[0];
+        $transaction = $form[1] ?? "";
+
+
+        // $data = GoodIssue::find($request->id);
+        return QRCode::text($id)->svg();   
 
     }
 
@@ -437,7 +443,7 @@ class OrdersController extends Controller
                 if ($check) {
                     $data = GoodIssueMaterial::find($check->id);
                     $data->material_id = $material_id;
-                    $data->item_material_id = $transaction_id;
+                    $data->good_issue_id = $transaction_id;
                     $data->material_name = $material_name;
                     $data->qty = $qty;
                     $data->uom = $uom;
@@ -445,7 +451,7 @@ class OrdersController extends Controller
                 } else {
                     $data = new GoodIssueMaterial;
                     $data->material_id = $material_id;
-                    $data->item_material_id = $transaction_id;
+                    $data->good_issue_id = $transaction_id;
                     $data->material_name = $material_name;
                     $data->qty = $qty;
                     $data->uom = $uom;
@@ -585,6 +591,32 @@ class OrdersController extends Controller
             DB::rollback();
             return response()->json(['error' => $ex->getMessage()], 500);
         }
+    }
+
+    public function scanQrCode(Request $request, $application)
+    {
+        $user_id = $request->user_id ?? Auth::id();
+        $id = $request->id;
+        
+        $sql =  GoodIssue::with('orders')
+                        ->with('details')
+                        ->where('application', $application)
+                        ->where('id', $id);
+
+        $data = $sql->get();
+
+        if(count($data) == 0) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Data tidak ditemukan',
+            ], 200);
+        }
+
+        return response()->json([
+            'status' => true,
+            'data' => $data,
+        ], 200);
+
     }
 
     public function generateNumber($number, $application) {

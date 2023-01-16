@@ -15,4 +15,14 @@ class GoodIssue extends Model
 
     const CREATED_AT = 'created_at';
     const UPDATED_AT = 'updated_at';
+
+    public function details()
+    {
+        return $this->hasMany(GoodIssueMaterial::class, 'good_issue_id', 'id');
+    }
+
+    public function orders()
+    {
+        return $this->hasMany(Orders::class, 'id', 'orders_id');
+    }
 }

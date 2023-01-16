@@ -13,6 +13,8 @@ use App\Http\Controllers\Api\UploadController;
 use App\Http\Controllers\Api\OrdersController;
 use App\Http\Controllers\Api\MaterialController;
 use App\Http\Controllers\Api\SupplierController;
+use App\Http\Controllers\Api\GoodReceiveController;
+use App\Http\Controllers\Api\ConvectionController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -27,7 +29,7 @@ use App\Http\Controllers\Api\SupplierController;
 Route::post('/register/{application}', [AuthController::class, 'createUser']);
 Route::post('/login/{application}', [AuthController::class, 'loginUser']);
 Route::get('/public/image/{application}', [UploadController::class, 'loadImage']);
-Route::get('/qrcode/{application}', [OrdersController::class, 'qrcode']);
+Route::post('/qrcode/{application}', [OrdersController::class, 'qrcode']);
 
 Route::middleware('auth:sanctum')->get('/user/{application}', function (Request $request) {
     return $request->user();
@@ -82,12 +84,19 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::post('/order-model/store/{application}', [OrdersController::class, 'store']);
     Route::post('/order-model/finish/{application}', [OrdersController::class, 'finish']);
 
-    Route::post('/good-issue-material/view/{application}', [OrdersController::class, 'viewMaterial']);
-    Route::post('/good-issue-material/store/{application}', [OrdersController::class, 'storeMaterial']);
+    Route::post('/good-issue/view/{application}', [OrdersController::class, 'viewMaterial']);
+    Route::post('/good-issue/store/{application}', [OrdersController::class, 'storeMaterial']);
+    Route::post('/good-issue/scan-qr/{application}', [OrdersController::class, 'scanQrCode']);
+
+    Route::post('/good-receive/confirm/{application}', [GoodReceiveController::class, 'store']);
+    Route::post('/good-receive/list/{application}', [GoodReceiveController::class, 'list']);
+    Route::post('/good-receive/view/{application}', [GoodReceiveController::class, 'view']);
 
     Route::post('/order-assignjob/view/{application}', [OrdersController::class, 'viewAssignjob']);
     Route::post('/order-assignjob/store/{application}', [OrdersController::class, 'storeAssignjob']);
     
-    
+    Route::post('/job/list/{application}', [ConvectionController::class, 'list']);
+    Route::post('job/store/{application}', [ConvectionController::class, 'store']);
+    Route::post('job/reject/{application}', [ConvectionController::class, 'reject']);
 
 });
